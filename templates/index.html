@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baseball Batting Order Optimization</title>
+</head>
+<body>
+    <h1>Enter Stats for Players</h1>
+    <form method="POST">
+        {% for i in range(1, 12) %}
+            <h3>Player {{ i }}</h3>
+            <label for="obp_{{ i }}">On-Base Percentage (OBP):</label>
+            <input type="number" step="0.01" name="obp_{{ i }}" required><br><br>
+            <label for="slg_{{ i }}">Slugging Percentage (SLG):</label>
+            <input type="number" step="0.01" name="slg_{{ i }}" required><br><br>
+        {% endfor %}
+        <button type="submit">Calculate</button>
+    </form>
+
+    {% if best_order is not none %}
+        <h2>Results</h2>
+        <p>Best Batting Order: {{ best_order }}</p>
+        <p>Total Runs Scored: {{ best_runs }}</p>
+    {% endif %}
+</body>
+</html>
