@@ -1,8 +1,17 @@
 from flask import Flask, render_template, request
 import random
 import numpy as np
+import os
 
 app = Flask(__name__)
+
+LOG_FILE = "logs.txt"
+
+def save_logs_to_file(logs):
+    # if os.path.exists(LOG_FILE):
+    #     os.remove(LOG_FILE)  # Delete existing file if present
+    with open(LOG_FILE, 'a') as log_file:
+        log_file.write(logs)  # Append new log data
 
 # Function to get player statistics from user input
 def get_player_stats(form_data):
@@ -126,17 +135,32 @@ def evolve_population(population, players):
     return next_generation
 
 def genetic_algorithm(players):
+    logs = ""
     population = create_population()
     for generation in range(50):
         population = evolve_population(population, players)
         best_individual = max(population, key=lambda ind: evaluate_batting_order(players, ind))
         print(f"Generation {generation + 1}: Best Runs = {evaluate_batting_order(players, best_individual)}")
+        log_entry = f"Generation {generation + 1}: Best Runs = {evaluate_batting_order(players, best_individual)}\n"
+        save_logs_to_file(log_entry)
     best_individual = max(population, key=lambda ind: evaluate_batting_order(players, ind))
     return best_individual, evaluate_batting_order(players, best_individual)
+
+@app.route("/fetch-logs", methods=["GET"])
+def fetch_logs():
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, 'r') as log_file:
+            logs = log_file.read()
+        return logs
+    return "No logs available."
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
+
+        if os.path.exists(LOG_FILE):
+            os.remove(LOG_FILE)
+
         players = get_player_stats(request.form)
         best_order, best_runs = genetic_algorithm(players)
         return render_template("index.html", best_order=best_order, best_runs=best_runs)

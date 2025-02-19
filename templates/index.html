@@ -4,6 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baseball Batting Order Optimization</title>
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Enter Stats for Players</h1>
@@ -18,10 +53,59 @@
         <button type="submit">Calculate</button>
     </form>
 
+    <button onclick="showLogs()" style="position: absolute; top: 10px; right: 10px;">Show Logs</button>
+
     {% if best_order is not none %}
         <h2>Results</h2>
         <p>Best Batting Order: {{ best_order }}</p>
         <p>Total Runs Scored: {{ best_runs }}</p>
     {% endif %}
+
+    <!-- Modal -->
+    <div id="logsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Logs</h2>
+            <pre id="logContent">Loading...</pre>
+        </div>
+    </div>
+
+    <script>
+        let logsInterval; // To store the interval reference for refreshing logs every 2 seconds
+
+        // Function to open the modal and start fetching logs every 2 seconds
+        function showLogs() {
+            document.getElementById('logsModal').style.display = "block";
+            fetchLogs(); // Initial log fetch when the modal opens
+
+            // Set an interval to fetch logs every 2 seconds while the modal is open
+            logsInterval = setInterval(fetchLogs, 2000);
+        }
+
+        // Function to fetch logs from the server
+        function fetchLogs() {
+            fetch('/fetch-logs')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('logContent').textContent = data;
+                })
+                .catch(error => {
+                    document.getElementById('logContent').textContent = "Error loading logs.";
+                });
+        }
+
+        // Function to close the modal and stop fetching logs
+        function closeModal() {
+            document.getElementById('logsModal').style.display = "none";
+            clearInterval(logsInterval); // Stop the interval to prevent further log fetching
+        }
+
+        // Close the modal if the user clicks anywhere outside of it
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('logsModal')) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 </html>
